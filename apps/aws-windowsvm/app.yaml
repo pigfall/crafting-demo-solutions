@@ -1,0 +1,15 @@
+---
+overview: |
+  # AWS Resources in Sandbox
+  
+  This App demonstrates how to manage the lifecycle
+  of AWS resources per sandbox.
+
+workspaces:
+- name: dev
+  checkouts:
+  - path: demo
+    repo:
+      git: git@github.com:crafting-demo/self-hosting
+  base_snapshot: base/dev/1
+  home_snapshot: home/dev/1
