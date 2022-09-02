@@ -14,7 +14,7 @@ function build() {
             suffix=$((suffix+1))
         elif [[ "$SNAPSHOT_VERSION" != "last" ]]; then
             suffix="$SNAPSHOT_VERSION"
-            flags="--overwrite"
+            flags="--force"
         fi
         echo "Build $snapshot -> $prefix$suffix"
         build_snapshot_$fn "$prefix$suffix" $flags

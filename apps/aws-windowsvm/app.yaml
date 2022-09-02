@@ -12,6 +12,6 @@ workspaces:
     repo:
       git: git@github.com:crafting-demo/self-hosting
   env:
-  - AWS_CONFIG=/run/sandbox/fs/secrets/shared/aws-config
+  - AWS_CONFIG_FILE=/run/sandbox/fs/secrets/shared/aws-config
   base_snapshot: base/dev/1
   home_snapshot: home/dev/1
