@@ -1,0 +1,138 @@
+overview: |
+  The demo of monitoring and alerting.
+  
+  - The `monitor` workspace runs telegraf to collect
+    sandbox health status periodically and exposes
+    metrics for prometheus;
+  - The `prometheus` container collects the metrics;
+  - The `alertmanager` container generate alerts;
+  - The `grafana` container provides visualization.
+endpoints:
+- name: prom
+  http:
+    routes:
+    - path_prefix: /
+      backend:
+        target: prometheus
+        port: webui
+workspaces:
+- name: monitor
+  ports:
+  - name: metrics
+    port: 9000
+    protocol: HTTP/TCP
+  checkouts:
+  - path: demo
+    repo:
+      git: https://github.com/crafting-demo/solutions
+    manifest:
+      overlays:
+      - content: |
+          hooks:
+            post-checkout:
+              cmd: |
+                mkdir -p $HOME/telegraf
+                curl -sSLf https://dl.influxdata.com/telegraf/releases/telegraf-1.23.4_linux_amd64.tar.gz | tar -C $HOME/telegraf -zx --strip-components=1
+          daemons:
+            telegraf:
+              run:
+                dir: apps/monalert
+                cmd: $HOME/telegraf/usr/bin/telegraf --config telegraf.conf
+containers:
+- name: prometheus
+  image: prom/prometheus:v2.38.0
+  args:
+  - "--storage.tsdb.path=/data"
+  - "--storage.tsdb.retention.time=3d"
+  - "--storage.tsdb.retention.size=2GB"
+  - "--config.file=/etc/prometheus.yaml"
+  ports:
+  - name: webui
+    port: 9090
+    protocol: HTTP/TCP
+  volumeMounts:
+  - name: prometheus-conf
+    path: /etc/prometheus.yaml
+  - name: alert-rules
+    path: /etc/prometheus/alert.rules
+- name: alertmanager
+  image: prom/alertmanager:v0.24.0
+  args:
+  - "--config.file=/etc/alertmanager.yaml"
+  - "--storage.path=/data"
+  - "--cluster.listen-address=" # Disable HA.
+  ports:
+  - name: alertmanager
+    port: 9093
+    protocol: HTTP/TCP
+  volumeMounts:
+  - name: alertmanager-conf
+    path: /etc/alertmanager.yaml
+  - name: slack-apiurl
+    path: /etc/slack-apiurl
+volumes:
+- name: prometheus-conf
+  content:
+    text: |
+      global:
+        scrape_interval: 60s
+        scrape_timeout: 10s
+        evaluation_interval: 60s
+      rule_files:
+      - "/etc/prometheus/*.rules"
+      alerting:
+        alertmanagers:
+        - static_configs:
+          - targets:
+            - "alertmanager:9093"
+      scrape_configs:
+      - job_name: monitor
+        static_configs:
+        - targets: ['monitor:9000']
+      - job_name: prometheus
+        static_configs:
+        - targets: ['localhost:9090']
+- name: alert-rules
+  content:
+    text: |
+      groups:
+      - name: sandbox
+        rules:
+        - alert: ProblematicSandbox
+          expr: 'sandbox_problematic_workloads_count > 0'
+- name: alertmanager-conf
+  content:
+    text: |
+      global:
+        resolve_timeout: 1m
+        slack_api_url_file: '/etc/slack-apiurl'
+      route:
+        receiver: 'slack'
+      receivers:
+      - name: 'slack'
+        slack_configs:
+        - channel: '#cloud-alerts'
+          send_resolved: true
+          title: |-
+            [{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }} for {{ .CommonLabels.job }}
+            {{- if gt (len .CommonLabels) (len .GroupLabels) -}}
+              {{" "}}(
+              {{- with .CommonLabels.Remove .GroupLabels.Names }}
+                {{- range $index, $label := .SortedPairs -}}
+                  {{ if $index }}, {{ end }}
+                  {{- $label.Name }}="{{ $label.Value -}}"
+                {{- end }}
+              {{- end -}}
+              )
+            {{- end }}
+          text: >-
+            {{ range .Alerts -}}
+            *Alert:* {{ .Annotations.title }}{{ if .Labels.severity }} - `{{ .Labels.severity }}`{{ end }}
+            *Description:* {{ .Annotations.description }}
+            *Details:*
+              {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+              {{ end }}
+            {{ end }}
+- name: slack-apiurl
+  secret:
+    name: slack-apiurl
