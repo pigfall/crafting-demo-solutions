@@ -1,4 +1,12 @@
 daemons:
+  guacd:
+    run:
+      cmd: |
+        set -ex
+        docker rm -f guacd 2>/dev/null || true
+        docker run --rm --name guacd -a STDOUT -a STDERR \
+          -v /home/owner:/drive/home/owner \
+          guacamole/guacd:1.4.0
   rdp:
     run:
       cmd: apps/aws-windowsvm/run.sh

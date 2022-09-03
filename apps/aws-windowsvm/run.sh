@@ -35,15 +35,17 @@ REPLACE INTO guacamole_connection_parameter (connection_id,parameter_name,parame
     (1,'username','Administrator'),
     (1,'ignore-cert','true'),
     (1,'hostname','$(resource_output public_dns)'),
-    (1,'password','$(resource_output password)');
+    (1,'password','$(resource_output password)'),
+    (1,'enable-drive','true'),
+    (1,'drive-name','sandbox'),
+    (1,'drive-path','/drive');
 REPLACE INTO guacamole_connection_permission (entity_id,connection_id,permission)
     SELECT entity_id,1,'READ' FROM guacamole_entity WHERE name = '$SANDBOX_OWNER_EMAIL';
 EOS
 
 docker rm guacamole -f >/dev/null 2>&1
-exec docker run -i -a STDOUT -a STDERR --name guacamole --rm \
-    -e GUACD_HOSTNAME=guacd \
-    -e GUACD_PORT=4822 \
+exec docker run -a STDOUT -a STDERR --name guacamole --rm \
+    --link guacd:guacd \
     -e MYSQL_HOSTNAME=guacamoledb \
     -e MYSQL_DATABASE=guacamole \
     -e MYSQL_USER=guacamole \

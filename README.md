@@ -1,1 +1,1 @@
-# Demos for Self-hosting Deployments
+# Demo Solutions

@@ -6,4 +6,4 @@ workspaces:
   checkouts:
   - path: demo
     repo:
-      git: https://github.com/crafting-demo/self-hosting
+      git: https://github.com/crafting-demo/solutions

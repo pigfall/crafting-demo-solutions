@@ -30,7 +30,7 @@ workspaces:
   checkouts:
   - path: demo
     repo:
-      git: https://github.com/crafting-demo/self-hosting
+      git: https://github.com/crafting-demo/solutions
     manifest:
       overlays:
       - file: apps/aws-windowsvm/manifest.yaml
@@ -38,13 +38,6 @@ workspaces:
   - AWS_CONFIG_FILE=/run/sandbox/fs/secrets/shared/aws-config
   base_snapshot: base/dev/1
   home_snapshot: home/dev/1
-containers:
-- name: guacd
-  image: guacamole/guacd:1.4.0
-  ports:
-  - name: guacd
-    port: 4822
-    protocol: TCP
 dependencies:
 - name: guacamoledb
   service_type: mysql
