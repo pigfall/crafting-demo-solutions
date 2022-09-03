@@ -1,0 +1,9 @@
+---
+overview: |
+  This is an empty sandbox for building snapshots.
+workspaces:
+- name: builder
+  checkouts:
+  - path: demo
+    repo:
+      git: git@github.com:crafting-demo/self-hosting
