@@ -32,7 +32,7 @@ workspaces:
             post-checkout:
               cmd: |
                 mkdir -p $HOME/telegraf
-                curl -sSLf https://dl.influxdata.com/telegraf/releases/telegraf-1.23.4_linux_amd64.tar.gz | tar -C $HOME/telegraf -zx --strip-components=1
+                curl -sSLf https://dl.influxdata.com/telegraf/releases/telegraf-1.23.4_linux_amd64.tar.gz | tar -C $HOME/telegraf -zx --strip-components=2
           daemons:
             telegraf:
               run:
