@@ -6,34 +6,27 @@ overview: |
   of AWS resources per sandbox.
 
 endpoints:
-- name: guac
+- name: rdp
   http:
     path: /guacamole/
     routes:
     - path_prefix: /
       backend:
         target: dev
-        port: guac
-- name: view
-  http:
-    path: /guacamole/
-    auth_proxy:
-      disabled: true
-    routes:
-    - path_prefix: /
-      backend:
-        target: dev
-        port: guac
+        port: guacamole
 workspaces:
 - name: dev
   ports:
-  - name: guac
+  - name: guacamole
     port: 8080
     protocol: HTTP/TCP
   checkouts:
   - path: demo
     repo:
       git: git@github.com:crafting-demo/self-hosting
+    manifest:
+      overlays:
+      - file: apps/aws-windowsvm/manifest.yaml
   env:
   - AWS_CONFIG_FILE=/run/sandbox/fs/secrets/shared/aws-config
   base_snapshot: base/dev/1
@@ -57,7 +50,14 @@ resources:
 - name: windows
   brief: EC2 Windows VM
   details: |
-    This is an EC2 Windows VM.
+    EC2 Windows VM:
+    
+    - Hostname: {{data.public_dns.value}}
+    - PublicIP: {{data.public_ip.value}}
+
+    Access via [RDP]({{endpoints.rdp.url}}).
+    _Administrator_ password can be found in `/run/sandbox/fs/resources/windows/output`.
+
   handlers:
     on_create:
       max_retries: 3

@@ -1,0 +1,4 @@
+daemons:
+  rdp:
+    run:
+      cmd: apps/aws-windowsvm/run.sh
