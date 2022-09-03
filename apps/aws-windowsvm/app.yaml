@@ -2,8 +2,9 @@
 overview: |
   # AWS Resources in Sandbox
   
-  This App demonstrates how to manage the lifecycle
-  of AWS resources per sandbox.
+  This sandbox is created with an EC2 Windows VM.
+  Click the endpoint [rdp]({{endpoints.rdp.url}}) to access the Windows desktop
+  or click the resource `windows` to see the detailed instructions.
 
 endpoints:
 - name: rdp
@@ -20,10 +21,16 @@ workspaces:
   - name: guacamole
     port: 8080
     protocol: HTTP/TCP
+  probes:
+    readiness:
+    - name: guacamole
+      http_get:
+        port: 8080
+        path: /guacamole/
   checkouts:
   - path: demo
     repo:
-      git: git@github.com:crafting-demo/self-hosting
+      git: https://github.com/crafting-demo/self-hosting
     manifest:
       overlays:
       - file: apps/aws-windowsvm/manifest.yaml
@@ -55,8 +62,15 @@ resources:
     - Hostname: {{data.public_dns.value}}
     - PublicIP: {{data.public_ip.value}}
 
-    Access via [RDP]({{endpoints.rdp.url}}).
-    _Administrator_ password can be found in `/run/sandbox/fs/resources/windows/output`.
+    Access via [RDP]({{endpoints.rdp.url}}), or use the following config `{{sandbox.name}}.rdp`:
+
+    ```
+    auto connect:i:1
+    full address:s:{{data.public_dns.value}}
+    username:s:Administrator
+    ```
+
+    Password can be found in `/run/sandbox/fs/resources/windows/output`.
 
   handlers:
     on_create:
