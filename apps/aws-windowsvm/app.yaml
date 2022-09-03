@@ -5,8 +5,31 @@ overview: |
   This App demonstrates how to manage the lifecycle
   of AWS resources per sandbox.
 
+endpoints:
+- name: guac
+  http:
+    path: /guacamole/
+    routes:
+    - path_prefix: /
+      backend:
+        target: dev
+        port: guac
+- name: view
+  http:
+    path: /guacamole/
+    auth_proxy:
+      disabled: true
+    routes:
+    - path_prefix: /
+      backend:
+        target: dev
+        port: guac
 workspaces:
 - name: dev
+  ports:
+  - name: guac
+    port: 8080
+    protocol: HTTP/TCP
   checkouts:
   - path: demo
     repo:
@@ -15,3 +38,44 @@ workspaces:
   - AWS_CONFIG_FILE=/run/sandbox/fs/secrets/shared/aws-config
   base_snapshot: base/dev/1
   home_snapshot: home/dev/1
+containers:
+- name: guacd
+  image: guacamole/guacd:1.4.0
+  ports:
+  - name: guacd
+    port: 4822
+    protocol: TCP
+dependencies:
+- name: guacamoledb
+  service_type: mysql
+  properties:
+    database: guacamole
+    username: guacamole
+    password: guacamole
+  snapshot: mysql/guacamole/base/1
+resources:
+- name: windows
+  brief: EC2 Windows VM
+  details: |
+    This is an EC2 Windows VM.
+  handlers:
+    on_create:
+      max_retries: 3
+      timeout: 1800s
+      use_workspace:
+        name: dev
+        run:
+          dir: demo/apps/aws-windowsvm/tf
+          cmd: |
+            set -ex
+            terraform init
+            terraform apply -auto-approve >&2
+            terraform output -json
+    on_delete:
+      max_retries: 3
+      timeout: 1800s
+      use_workspace:
+        name: dev
+        run:
+          dir: demo/apps/aws-windowsvm/tf
+          cmd: terraform destroy -auto-approve
