@@ -9,7 +9,7 @@ function sandbox_names() {
 }
 
 function workload_status() {
-    jq -cMr '.[]|select(.meta.name == "'"$1"'").status.workloads[]|"\(.status.state)"' <<<"$STATUS_JSON"
+    jq -cMr '.[]|select(.meta.name == "'"$1"'").status.workloads[]|"\(.agent.overview.state)"' <<<"$STATUS_JSON"
 }
 
 echo "# TYPE $METRIC gauge"

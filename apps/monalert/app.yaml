@@ -5,8 +5,11 @@ overview: |
     sandbox health status periodically and exposes
     metrics for prometheus;
   - The `prometheus` container collects the metrics;
-  - The `alertmanager` container generate alerts;
-  - The `grafana` container provides visualization.
+  - The `alertmanager` container generates alerts.
+
+  This app requires a shared secret `slack-apiurl` to
+  dispatch alerts into a slack channel.
+
 endpoints:
 - name: prom
   http:
