@@ -1,6 +1,6 @@
 #!/bin/bash
 
-readonly METRIC="sandbox_problematic_workloads_count"
+readonly METRIC="problematic_workloads_count"
 
 STATUS_JSON="$(cs -O $SANDBOX_ORG sandbox list -o json)"
 
@@ -12,8 +12,8 @@ function workload_status() {
     jq -cMr '.[]|select(.meta.name == "'"$1"'").status.workloads[]|"\(.agent.overview.state)"' <<<"$STATUS_JSON"
 }
 
-echo "# TYPE $METRIC gauge"
 echo "# HELP $METRIC The number of PROMBLEMATIC workloads in a sandbox"
+echo "# TYPE $METRIC gauge"
 
 for sandbox in $(sandbox_names) ; do
     count=0
