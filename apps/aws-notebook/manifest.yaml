@@ -1,0 +1,6 @@
+daemons:
+  openvpn:
+    run:
+      cmd: |
+        sudo openvpn --config $OPENVPN_CONFIG_FILE
+

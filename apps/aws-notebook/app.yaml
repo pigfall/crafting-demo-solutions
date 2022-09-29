@@ -1,0 +1,48 @@
+---
+overview: |
+  # Jupter Notebook
+
+workspaces:
+- name: dev
+  checkouts:
+  - path: demo
+    repo:
+      git: https://github.com/crafting-demo/solutions.git
+    manifest:
+      overlays:
+      - file: apps/aws-notebook/manifest.yaml
+  env:
+  - AWS_CONFIG_FILE=/run/sandbox/fs/secrets/shared/aws-config
+  - OPENVPN_CONFIG_FILE=/run/sandbox/fs/secrets/shared/openvpn-config
+  - ECS_CLUSTER_NAME=
+  - SUBNET_ID=
+  - SERVICE_LAUNCH_TYPE=FARGATE
+  - TASK_IMAGE=
+  base_snapshot: base-notebook-v1
+resources:
+- name: aws-ecs-service
+  brief: AWS ECS Service
+  handlers:
+    on_create:
+      max_retries: 3
+      timeout: 1800s
+      use_workspace:
+        name: dev
+        run:
+          dir: demo/apps/aws-notebook/tf
+          cmd: |
+            ./on_create.sh
+    on_delete:
+      max_retries: 3
+      timeout: 1800s
+      use_workspace:
+        name: dev
+        run:
+          dir: demo/apps/aws-notebook/tf
+          cmd: >
+            terraform apply -destroy -auto-approve
+            -var="ecs_cluster_name=${ECS_CLUSTER_NAME}"  
+            -var="subnet_id=${SUBNET_ID}" 
+            -var="security_groups=${SECURITY_GROUPS}" 
+            -var="service_launch_type=${SERVICE_LAUNCH_TYPE}"  
+            -var="task_image=${TASK_IMAGE}"
