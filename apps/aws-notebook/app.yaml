@@ -18,6 +18,7 @@ workspaces:
   - SUBNET_ID=
   - SERVICE_LAUNCH_TYPE=FARGATE
   - TASK_IMAGE=
+  - SECURITY_GROUPS=
   base_snapshot: base-notebook-v1
 resources:
 - name: aws-ecs-service
