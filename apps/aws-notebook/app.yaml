@@ -31,8 +31,7 @@ resources:
         name: dev
         run:
           dir: demo/apps/aws-notebook/tf
-          cmd: |
-            ./on_create.sh
+          cmd: ./on_create.sh
     on_delete:
       max_retries: 3
       timeout: 1800s
