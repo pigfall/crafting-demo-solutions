@@ -28,7 +28,7 @@ while true;do
   fi
   if [[ "$TASK_IP"=="${FINAL_TASK_IP}" ]];then
      FINAL_TASK_IP_COUNT=$(expr $FINAL_TASK_IP_COUNT + 1)
-     if [[ $FINAL_TASK_IP_COUNT -ge 3]];then
+     if [[ $FINAL_TASK_IP_COUNT -ge 3 ]];then
        break
      fi
   else
