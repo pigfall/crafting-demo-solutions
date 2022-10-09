@@ -17,7 +17,3 @@ terraform apply -auto-approve \
   -var="ssh_public_key=${SSH_PUBLIC_KEY}" \
   -var="service_launch_type=${SERVICE_LAUNCH_TYPE}" \
   -var="task_image=${TASK_IMAGE}"
-
-rm ~/.aws-notebook -rf
-mkdir -p ~/.aws-notebook
-cp get-task-ip.sh ~/.aws-notebook/get-task-ip.sh
