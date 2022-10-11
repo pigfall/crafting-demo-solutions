@@ -24,7 +24,7 @@ data "external" "env" {
   program = ["${path.module}/env.sh"]
 }
 
-data "external" "task"{
+data "external" "task" {
   program = ["${path.module}/get-task-ip.sh"]
   query = {
     ecs_cluster_name = data.aws_ecs_cluster.cluster.cluster_name
