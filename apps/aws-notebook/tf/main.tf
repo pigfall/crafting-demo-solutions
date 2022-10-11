@@ -24,6 +24,14 @@ data "external" "env" {
   program = ["${path.module}/env.sh"]
 }
 
+data "external" "task"{
+  program = ["${path.module}/get-task-ip.sh,"stable"]
+  query = {
+    ecs_cluster_name = data.aws_ecs_cluster.cluster.cluster_name
+    ecs_service_name = data.aws_ecs_service.notebook.name
+  }
+}
+
 data "aws_iam_role" "ecs_task_execution_role" {
   name = "ecsTaskExecutionRole"
 }
