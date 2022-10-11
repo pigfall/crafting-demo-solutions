@@ -28,7 +28,7 @@ data "external" "task"{
   program = ["${path.module}/get-task-ip.sh","stable"]
   query = {
     ecs_cluster_name = data.aws_ecs_cluster.cluster.cluster_name
-    ecs_service_name = data.aws_ecs_service.notebook.name
+    ecs_service_name = resource.aws_ecs_service.notebook.name
   }
 }
 
