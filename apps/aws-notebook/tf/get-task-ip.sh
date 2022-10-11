@@ -5,7 +5,7 @@ set -o pipefail
 AWS_REGION=$(aws configure get region)
 
 
-eval "$(echo $2 | jq -r '@sh "ECS_CLUSTER_NAME=\(.ecs_cluster_name) ECS_SERVICE_NAME=\(.ecs_service_name)"')"
+eval "$(echo $1 | jq -r '@sh "ECS_CLUSTER_NAME=\(.ecs_cluster_name) ECS_SERVICE_NAME=\(.ecs_service_name)"')"
 
 function get_task_ip(){
   TASK_ARN=$(aws ecs list-tasks --region ${AWS_REGION} --cluster ${ECS_CLUSTER_NAME} --service=${ECS_SERVICE_NAME} | jq .taskArns[0] | tr -d '"')
@@ -36,10 +36,6 @@ function get_stable_task_ip(){
   echo ${TASK_IP}
 }
 
-if [[ "$1" == "stable" ]];then
-  TASK_IP=$(get_stable_task_ip)
-else
-  TASK_IP=$(get_task_ip)
-fi
+TASK_IP=$(get_stable_task_ip)
 
 echo {'"'private_ip'"':'"'${TASK_IP}'"'}
