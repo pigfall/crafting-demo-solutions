@@ -6,7 +6,7 @@ set -o pipefail
 # Prepare key-pair used to connect to ecs container
 rm -f ~/.ssh/aws-notebook_rsa
 rm -f ~/.ssh/aws-notebook_rsa.pub
-ssh-keygen -t rsa -N "" -f ~/.ssh/aws-notebook_rsa
+ssh-keygen -t rsa -N "" -f ~/.ssh/aws-notebook_rsa >&2
 SSH_PUBLIC_KEY=$(cat ~/.ssh/aws-notebook_rsa.pub)
 
 terraform init >&2
