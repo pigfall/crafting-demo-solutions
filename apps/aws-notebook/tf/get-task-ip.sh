@@ -39,7 +39,7 @@ function get_stable_task_ip(){
 if [[ "$1" == "stable" ]];then
   TASK_IP=$(get_stable_task_ip)
 else
-  TASK_IP=get_task_ip
+  TASK_IP=$(get_task_ip)
 fi
 
 echo {'"'private_ip'"':'"'${TASK_IP}'"'}
