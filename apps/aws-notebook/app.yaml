@@ -25,6 +25,7 @@ resources:
   brief: AWS ECS Service
   handlers:
     on_create:
+      save_state: true
       max_retries: 3
       timeout: 1800s
       use_workspace:
