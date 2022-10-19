@@ -1,5 +1,8 @@
 # Scripts to quicky deploy a aws-notebook  development environment
-This will create a AWS ECS cluster and a aws-notebook sandbox app by some commands
+This will create a AWS ECS cluster and a aws-notebook sandbox app by some commands.
+
+The only thing you need to prepare is a image for your ecs service. You should build it from this [dockerfile](https://github.com/crafting-demo/solutions/blob/master/apps/aws-notebook/image/Dockerfile) and push it to your aws container registry
+
 
 ## Usage
 ```bash
