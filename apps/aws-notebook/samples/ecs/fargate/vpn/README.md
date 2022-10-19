@@ -1,4 +1,5 @@
-# Script to quicky deploy a aws-notebook  development environment
+# Scripts to quicky deploy a aws-notebook  development environment
+This will create a AWS ECS cluster and a aws-notebook sandbox app by some commands
 
 ## Usage
 ```bash
