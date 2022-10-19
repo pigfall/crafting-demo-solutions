@@ -12,7 +12,7 @@ if [[ ! -f "$GENERATED_BASE_DIR/generated_mark" ]];then
   # Generate keys and certs
   ORIGIN_WORKING_DIR=$(pwd)
   cd easy-rsa/easyrsa3 > /dev/null
-  ./easyrsa init-pki > /dev/null
+  echo "yes" | ./easyrsa init-pki > /dev/null
   echo "craftingdemo" | ./easyrsa build-ca nopass > /dev/null 2>&1
   echo "yes" | ./easyrsa build-server-full notebook.server.crafting.demo nopass > /dev/null 2>&1
   echo "yes" | ./easyrsa build-client-full notebook.client.crafting.demo nopass > /dev/null 2>&1
@@ -21,8 +21,8 @@ if [[ ! -f "$GENERATED_BASE_DIR/generated_mark" ]];then
   cp pki/private/notebook.server.crafting.demo.key ../../${GENERATED_BASE_DIR}/
   cp pki/issued/notebook.client.crafting.demo.crt ../../${GENERATED_BASE_DIR}/
   cp pki/private/notebook.client.crafting.demo.key ../../${GENERATED_BASE_DIR}/
-  touch $GENERATED_BASE_DIR/generated_mark
   cd $ORIGIN_WORKING_DIR
+  touch $GENERATED_BASE_DIR/generated_mark
 fi
 
 cat << EOF
