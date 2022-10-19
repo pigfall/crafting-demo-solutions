@@ -63,3 +63,4 @@ sed "s/AWS_CONFIG_FILE.*/AWS_CONFIG_FILE=\/run\/sandbox\/fs\/secrets\/shared\/${
     sed "s/SECURITY_GROUPS=.*/SECURITY_GROUPS=${SECURITY_GROUP}/g" | \
     cs app create ${APP_NAME} -O ${CRAFTING_ORG} -
 
+echo "🎉 Notebook created, now you can create a sandbox with the app: cs sandbox create YOUR_SANDBOX_NAME -a ${APP_NAME}"  
