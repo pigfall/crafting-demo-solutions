@@ -15,5 +15,20 @@ export AWS_SESSION_TOKEN=xxxxx
 export TASK_IMAGE=xxxx
 ./create_app.sh ${YOUR_APP_NAME}
 # instance a sandbox  from the app
-cs create sandbox ${YOUR_SANDBOX_NAME} -a ${YOUR_APP_NAME}
+cs  sandbox create ${YOUR_SANDBOX_NAME} -a ${YOUR_APP_NAME}
 ```
+
+## Clean the resources
+``` bash
+# Delete the resources in sandbox
+cs sandbxo delete ${YOUR_SANDBOX_NAME}
+cs app delete ${YOUR_APP_NAME}
+cs  secret delete ${YOUR_APP_NAME}-aws-config
+cs  secret delete ${YOUR_APP_NAME}-openvpn-config
+
+# Delete the resouces in AWS
+terraform destroy -auto-approve
+```
+
+## FAQ
+* The AWS Token expired will result to the sandbox failed to create ecs service task. Please update the secret of aws-config for your app
