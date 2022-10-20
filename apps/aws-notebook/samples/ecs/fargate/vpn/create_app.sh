@@ -19,7 +19,6 @@ APP_NAME="$1"
 ECS_CLUSTER_NAME=$(terraform output -raw ecs_cluster_name)
 SUBNET_ID=$(terraform output -raw subnet_id)
 SERVICE_LAUNCH_TYPE=$(terraform output -raw service_launch_type)
-SECURITY_GROUP=$(terraform output -raw security_group)
 
 # Prepare snapshot
 echo "🌸 Preparing snapshot for sandbox"
@@ -72,7 +71,6 @@ sed "s/AWS_CONFIG_FILE.*/AWS_CONFIG_FILE=\/run\/sandbox\/fs\/secrets\/shared\/${
     sed "s/SUBNET_ID.*/SUBNET_ID=${SUBNET_ID}/g" | \
     sed "s/SERVICE_LAUNCH_TYPE.*/SERVICE_LAUNCH_TYPE=${SERVICE_LAUNCH_TYPE}/g" | \
     sed  "s#TASK_IMAGE=.*#TASK_IMAGE=${TASK_IMAGE}#g" | \
-    sed "s/SECURITY_GROUPS=.*/SECURITY_GROUPS=${SECURITY_GROUP}/g" | \
     sed "s/base_snapshot.*/base_snapshot: ${SNAPSHOT_NAME}/g" | \
     cs app create ${APP_NAME} -O ${SANDBOX_ORG} -
 

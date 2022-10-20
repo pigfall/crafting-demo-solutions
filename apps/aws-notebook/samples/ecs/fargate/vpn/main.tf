@@ -47,28 +47,6 @@ resource "aws_iam_role_policy_attachment" "policy_attach" {
   policy_arn = data.aws_iam_policy.policy.arn
 }
 
-resource "aws_security_group" "sg" {
-  name   = "allow_all"
-  vpc_id = aws_vpc.dev-connection-ecs-fargate-vpn.id
-  ingress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-    self             = true
-  }
-
-  egress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-    self             = true
-  }
-
-}
 
 # Create ECS cluster hosted on Fargate
 resource "aws_ecs_cluster" "cluster" {
@@ -109,7 +87,6 @@ resource "aws_vpc_endpoint" "dev-connection-ecs-fargate-vpn-ecr-dkr" {
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
   subnet_ids          = [aws_subnet.subnet.id]
-  security_group_ids  = [aws_security_group.sg.id]
 
 }
 
@@ -119,7 +96,6 @@ resource "aws_vpc_endpoint" "dev-connection-ecs-fargate-vpn-ecr-api" {
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
   subnet_ids          = [aws_subnet.subnet.id]
-  security_group_ids  = [aws_security_group.sg.id]
 
 }
 
@@ -129,7 +105,6 @@ resource "aws_vpc_endpoint" "dev-connection-ecs-fargate-vpn-logs" {
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
   subnet_ids          = [aws_subnet.subnet.id]
-  security_group_ids  = [aws_security_group.sg.id]
 }
 
 
@@ -146,7 +121,6 @@ resource "aws_ec2_client_vpn_endpoint" "vpn" {
   }
 
   vpc_id             = aws_vpc.dev-connection-ecs-fargate-vpn.id
-  security_group_ids = [aws_security_group.sg.id]
 
 }
 
