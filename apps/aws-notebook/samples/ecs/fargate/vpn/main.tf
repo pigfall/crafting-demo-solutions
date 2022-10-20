@@ -47,14 +47,9 @@ resource "aws_iam_role" "role" {
   EOF
 }
 
-resource "aws_iam_role_policy_attachment" "test-attach" {
+resource "aws_iam_role_policy_attachment" "policy_attach" {
   role       = aws_iam_role.role.name
   policy_arn = data.aws_iam_policy.policy.arn
-}
-
-data "aws_iam_role" "ecs_task_execution_role" {
-  #name = "ecsTaskExecutionRole"
-  name = aws_iam_role.role.name
 }
 
 resource "aws_security_group" "sg" {
@@ -109,51 +104,6 @@ resource "aws_subnet" "dev-connection-ecs-fargate-vpn" {
     Name = "crafting-notebook-demo-subnet-a"
   }
 }
-
-# Create a task definition 
-resource "aws_ecs_task_definition" "dev-connection-ecs-fargate-vpn" {
-  family                   = "dev-connection-ecs-fargate-vpn"
-  requires_compatibilities = ["FARGATE"]
-  network_mode             = "awsvpc"
-  cpu                      = 256
-  memory                   = 512
-  runtime_platform {
-    operating_system_family = "LINUX"
-    cpu_architecture        = "X86_64"
-  }
-  task_role_arn      = data.aws_iam_role.ecs_task_execution_role.arn
-  execution_role_arn = data.aws_iam_role.ecs_task_execution_role.arn
-  container_definitions = jsonencode([
-    {
-      name      = "ssh-server"
-      image     = "926120211684.dkr.ecr.us-west-1.amazonaws.com/dev/tzz/ssh-server:latest"
-      essential = true
-      portMappings = [
-        {
-          containerPort = 2222
-          hostPort      = 2222
-        }
-      ]
-    }
-  ])
-}
-
-## Create ECS service
-resource "aws_ecs_service" "dev-connection-ecs-fargate-vpn" {
-  launch_type         = "FARGATE"
-  task_definition     = aws_ecs_task_definition.dev-connection-ecs-fargate-vpn.arn
-  name                = "dev-connection-ecs-fargate-vpn-ssh-server"
-  cluster             = aws_ecs_cluster.dev-connection-ecs-fargate-vpn.id
-  scheduling_strategy = "REPLICA"
-  desired_count       = 1
-  network_configuration {
-    subnets          = [aws_subnet.dev-connection-ecs-fargate-vpn.id]
-    assign_public_ip = false
-    security_groups  = [aws_security_group.sg.id]
-  }
-}
-
-
 
 # Create PrivateLink to access ECR without internet connection
 resource "aws_vpc_endpoint" "dev-connection-ecs-fargate-vpn-s3" {
