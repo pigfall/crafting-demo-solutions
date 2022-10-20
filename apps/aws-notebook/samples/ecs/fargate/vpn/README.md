@@ -9,7 +9,7 @@ This will create an AWS ECS cluster and an [aws-notebook sandbox app](https://gi
 - Upload your AWS config to sandbox secrets. For example:
   - If you use this repo in sandbox env, We recommend you use the Identity federation to prevent the AWS credential expiration.
     ```sh
-    cs secret create <MY_AWS_CONFIG> --shared -f - << EOF
+    cs secret create <YOUR_AWS_CONFIG> --shared -f - << EOF
     [default]
     region = <REGION>
     credential_process = idfed aws <ACCOUNT-ID> <ROLE>
@@ -17,7 +17,7 @@ This will create an AWS ECS cluster and an [aws-notebook sandbox app](https://gi
     ```
   - Or using AWS credentials
     ```sh
-    cs secret create ${MY_AWS_CONFIG} --shared -f - << EOF
+    cs secret create ${YOUR_AWS_CONFIG} --shared -f - << EOF
     [default]
     region= <AWS_REGION>
     aws_access_key_id= <AWS_ACCESS_KEY_ID>
@@ -33,10 +33,12 @@ This will create an AWS ECS cluster and an [aws-notebook sandbox app](https://gi
 terraform init && terraform apply -auto-approve 
 
 # Create a sandbox app for aws-notebook
+# The prepared AWS config
+export AWS_CONFIG=<YOUR_AWS_CONFIG>
 # The prepared container image for ECS task service.
-export TASK_IMAGE=xxxx
+export TASK_IMAGE=<TASK_IMAGE>
 # Which sandbox organization will be used to create the app
-export CRAFTING_ORG=xxxx
+export SANDBOX_ORG=<SANDBOX_ORG>
 ./create_app.sh <YOUR_APP_NAME>
 # instance a sandbox  from the app
 cs  sandbox create <YOUR_SANDBOX_NAME> -a <YOUR_APP_NAME>
