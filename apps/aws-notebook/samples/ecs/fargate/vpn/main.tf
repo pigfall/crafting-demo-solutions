@@ -9,26 +9,21 @@ terraform {
 
 # Configure the AWS Provider
 provider "aws" {
-}
-
-data "external" "tls" {
-  program = ["./prepare_openvpn_cert.sh"]
-}
-
-data "external" "vpn_client" {
-  program = ["./build_openvpn_config.sh"]
-
-  query = {
-    vpn_server_dns = aws_ec2_client_vpn_endpoint.dev-connection-ecs-fargate-vpn.dns_name
+  default_tags {
+    tags = {
+      Name = "sandbox-${var.ecs_cluster_name}"
+    }
   }
 }
+
+
 
 data "aws_iam_policy" "policy" {
   name = "AmazonECSTaskExecutionRolePolicy"
 }
 
 resource "aws_iam_role" "role" {
-  name = "craftingDemoEcsTaskExecutionRole"
+  name = "${var.ecs_cluster_name}-EcsTaskExecutionRole"
 
   assume_role_policy = <<EOF
     {
@@ -76,8 +71,8 @@ resource "aws_security_group" "sg" {
 }
 
 # Create ECS cluster hosted on Fargate
-resource "aws_ecs_cluster" "dev-connection-ecs-fargate-vpn" {
-  name = "crafting-notebook-demo"
+resource "aws_ecs_cluster" "cluster" {
+  name = var.ecs_cluster_name
 
   setting {
     name  = "containerInsights"
@@ -90,19 +85,13 @@ resource "aws_vpc" "dev-connection-ecs-fargate-vpn" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_support   = true
   enable_dns_hostnames = true
-  tags = {
-    Name = "crafting-notebook-demo"
-  }
 }
 
 # Create a subnet for VPC
-resource "aws_subnet" "dev-connection-ecs-fargate-vpn" {
+resource "aws_subnet" "subnet" {
   vpc_id     = aws_vpc.dev-connection-ecs-fargate-vpn.id
   cidr_block = "10.0.0.0/17"
 
-  tags = {
-    Name = "crafting-notebook-demo-subnet-a"
-  }
 }
 
 # Create PrivateLink to access ECR without internet connection
@@ -112,9 +101,6 @@ resource "aws_vpc_endpoint" "dev-connection-ecs-fargate-vpn-s3" {
   vpc_endpoint_type = "Gateway"
   route_table_ids   = [aws_vpc.dev-connection-ecs-fargate-vpn.main_route_table_id]
 
-  tags = {
-    Name = "crafting-notebook-demo-s3"
-  }
 }
 
 resource "aws_vpc_endpoint" "dev-connection-ecs-fargate-vpn-ecr-dkr" {
@@ -122,12 +108,9 @@ resource "aws_vpc_endpoint" "dev-connection-ecs-fargate-vpn-ecr-dkr" {
   service_name        = "com.amazonaws.us-west-1.ecr.dkr"
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
-  subnet_ids          = [aws_subnet.dev-connection-ecs-fargate-vpn.id]
+  subnet_ids          = [aws_subnet.subnet.id]
   security_group_ids  = [aws_security_group.sg.id]
 
-  tags = {
-    Name = "crafting-notebook-demo-ecr-dkr"
-  }
 }
 
 resource "aws_vpc_endpoint" "dev-connection-ecs-fargate-vpn-ecr-api" {
@@ -135,12 +118,9 @@ resource "aws_vpc_endpoint" "dev-connection-ecs-fargate-vpn-ecr-api" {
   service_name        = "com.amazonaws.us-west-1.ecr.api"
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
-  subnet_ids          = [aws_subnet.dev-connection-ecs-fargate-vpn.id]
+  subnet_ids          = [aws_subnet.subnet.id]
   security_group_ids  = [aws_security_group.sg.id]
 
-  tags = {
-    Name = "crafting-notebook-demo-ecr-api"
-  }
 }
 
 resource "aws_vpc_endpoint" "dev-connection-ecs-fargate-vpn-logs" {
@@ -148,33 +128,18 @@ resource "aws_vpc_endpoint" "dev-connection-ecs-fargate-vpn-logs" {
   service_name        = "com.amazonaws.us-west-1.logs"
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
-  subnet_ids          = [aws_subnet.dev-connection-ecs-fargate-vpn.id]
+  subnet_ids          = [aws_subnet.subnet.id]
   security_group_ids  = [aws_security_group.sg.id]
-
-  tags = {
-    Name = "crafting-notebook-demo-logs"
-  }
 }
 
-resource "aws_acm_certificate" "cert" {
-  private_key      = file(data.external.tls.result.server_key)
-  certificate_body = file(data.external.tls.result.server_cert)
-
-  certificate_chain = file(data.external.tls.result.ca_cert)
-}
-
-#data "aws_acm_certificate" "dev-connection-ecs-fargate-vpn" {
-#  domain   = "notebook.server.crafting.demo"
-#  statuses = ["ISSUED"]
-#}
 
 # Create Client VPN Endpoint
-resource "aws_ec2_client_vpn_endpoint" "dev-connection-ecs-fargate-vpn" {
+resource "aws_ec2_client_vpn_endpoint" "vpn" {
   client_cidr_block      = "172.17.0.0/16"
-  server_certificate_arn = aws_acm_certificate.cert.arn
+  server_certificate_arn = aws_acm_certificate.server.arn
   authentication_options {
     type                       = "certificate-authentication"
-    root_certificate_chain_arn = aws_acm_certificate.cert.arn
+    root_certificate_chain_arn = aws_acm_certificate.ca.arn
   }
   connection_log_options {
     enabled = false
@@ -183,20 +148,17 @@ resource "aws_ec2_client_vpn_endpoint" "dev-connection-ecs-fargate-vpn" {
   vpc_id             = aws_vpc.dev-connection-ecs-fargate-vpn.id
   security_group_ids = [aws_security_group.sg.id]
 
-  tags = {
-    Name = "crafting-notebook-demo"
-  }
 }
 
 # Associate subnet with Client VPN endpoint
 resource "aws_ec2_client_vpn_network_association" "dev-connection-ecs-fargate-vpn" {
-  client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.dev-connection-ecs-fargate-vpn.id
-  subnet_id              = aws_subnet.dev-connection-ecs-fargate-vpn.id
+  client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.vpn.id
+  subnet_id              = aws_subnet.subnet.id
 }
 
 # Add Authorization Rule to Client VPN endpoint
 resource "aws_ec2_client_vpn_authorization_rule" "dev-connection-ecs-fargate-vpn" {
-  client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.dev-connection-ecs-fargate-vpn.id
-  target_network_cidr    = aws_subnet.dev-connection-ecs-fargate-vpn.cidr_block
+  client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.vpn.id
+  target_network_cidr    = aws_subnet.subnet.cidr_block
   authorize_all_groups   = true
 }

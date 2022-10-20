@@ -20,4 +20,4 @@ chmod a+rx /usr/local/bin/terraform
 curl -sSLf -o /tmp/awscli.zip https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
 unzip -d /tmp -o /tmp/awscli.zip
 /tmp/aws/install
-cs snapshot create "$1"
+cs snapshot create "$1" -f

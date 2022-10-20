@@ -23,7 +23,7 @@ SECURITY_GROUP=$(terraform output -raw security_group)
 
 # Prepare snapshot
 echo "🌸 Preparing snapshot for sandbox"
-SNAPSHOT_NAME=${SNAPSHOT_NAME:-base-notebook-v1}
+SNAPSHOT_NAME=${SNAPSHOT_NAME:-${APP_NAME}-base-notebook-v1}
 cs app create ${APP_NAME}-sn -O ${SANDBOX_ORG} - << EOF
 workspaces:
   - name: dev
@@ -33,13 +33,16 @@ workspaces:
           git: https://github.com/crafting-demo/solutions.git
 EOF
 cs sandbox create ${APP_NAME}-sn -a ${APP_NAME}-sn -O ${SANDBOX_ORG}
-cs ssh -W ${APP_NAME}-sn/dev -O ${SANDBOX_ORG} -- bash -c "cd solutions/shared/snapshots/notebook/ && bash build_base.sh ${SNAPSHOT_NAME}"
+cs ssh -W ${APP_NAME}-sn/dev -O ${SANDBOX_ORG} -- chmod +x solutions/shared/snapshots/notebook/build_base.sh
+cs ssh -W ${APP_NAME}-sn/dev -O ${SANDBOX_ORG} -- sudo solutions/shared/snapshots/notebook/build_base.sh ${SNAPSHOT_NAME}
 cs sandbox delete ${APP_NAME}-sn -O ${SANDBOX_ORG} --force
 cs app delete ${APP_NAME}-sn -O ${SANDBOX_ORG} --force
 
 # Upload OpenVPN Config
 echo "🌸 Uploading OpenVPN Config"
-cs secret create ${APP_NAME}-openvpn-config -O ${SANDBOX_ORG} --shared -f ./generated/vpn_client_config.ovpn
+cs secret create ${APP_NAME}-openvpn-config -O ${SANDBOX_ORG} --shared -f - << EOF
+$(terraform output -raw client_config)
+EOF
 
 
 # Create app

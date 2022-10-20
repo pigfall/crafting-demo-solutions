@@ -30,7 +30,7 @@ This will create an AWS ECS cluster and an [aws-notebook sandbox app](https://gi
 
 ```sh
 # Create AWS ECS
-terraform init && terraform apply -auto-approve 
+terraform init && terraform apply -auto-approve -var="ecs_cluster_name=<ECS_CLUSTER_NAME>"  
 
 # Create a sandbox app for aws-notebook
 # The prepared AWS config
