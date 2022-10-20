@@ -32,12 +32,31 @@ workspaces:
         repo:
           git: https://github.com/crafting-demo/solutions.git
 EOF
-cs sandbox create ${APP_NAME}-sn -a ${APP_NAME}-sn -O ${SANDBOX_ORG}
-cs ssh -W ${APP_NAME}-sn/dev -O ${SANDBOX_ORG} -- chmod +x solutions/shared/snapshots/notebook/build_base.sh
-cs ssh -W ${APP_NAME}-sn/dev -O ${SANDBOX_ORG} -- sudo solutions/shared/snapshots/notebook/build_base.sh ${SNAPSHOT_NAME}
-cs sandbox delete ${APP_NAME}-sn -O ${SANDBOX_ORG} --force
-cs app delete ${APP_NAME}-sn -O ${SANDBOX_ORG} --force
+set +e
+cs sandbox create ${APP_NAME}-sn -a ${APP_NAME}-sn -O ${SANDBOX_ORG} 
+if [[ $? -eq 0 ]];then
+  SNAPSHOT_SANDBOX_CREATED="true"
+else 
+  ERROR="failed to create app to create base snapshot"
+fi
 
+if [[ -n "$SNAPSHOT_SANDBOX_CREATED" ]];then
+  cs ssh -W ${APP_NAME}-sn/dev -O ${SANDBOX_ORG} -- chmod +x solutions/shared/snapshots/notebook/build_base.sh 
+  cs ssh -W ${APP_NAME}-sn/dev -O ${SANDBOX_ORG} -- sudo solutions/shared/snapshots/notebook/build_base.sh ${SNAPSHOT_NAME} 
+  [[ $? -eq 0 ]] || ERROR="failed to create snapshot"
+fi
+
+if [[ -n "$SNAPSHOT_SANDBOX_CREATED" ]];then
+  cs sandbox delete ${APP_NAME}-sn -O ${SANDBOX_ORG} --force
+  [[ $? -eq 0 ]] || ERROR="${ERROR}, failed to cleanup sandbox"
+fi
+
+cs app delete ${APP_NAME}-sn -O ${SANDBOX_ORG} --force
+[[ $? -eq 0 ]] || ERROR="${ERROR}, failed to cleanup app"
+
+[[ -z "$ERROR" ]] || fatal "${ERROR}, failed to create base snapshot"
+
+set -e
 # Upload OpenVPN Config
 echo "🌸 Uploading OpenVPN Config"
 cs secret create ${APP_NAME}-openvpn-config -O ${SANDBOX_ORG} --shared -f - << EOF
