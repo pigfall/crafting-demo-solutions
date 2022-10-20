@@ -33,7 +33,7 @@ This will create an AWS ECS cluster and an [aws-notebook sandbox app](https://gi
 terraform init && terraform apply -auto-approve 
 
 # Create a sandbox app for aws-notebook
-# The prepared container image for ecs task service.
+# The prepared container image for ECS task service.
 export TASK_IMAGE=xxxx
 # Which sandbox organization will be used to create the app
 export CRAFTING_ORG=xxxx
