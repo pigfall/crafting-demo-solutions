@@ -23,20 +23,19 @@ SECURITY_GROUP=$(terraform output -raw security_group)
 
 # Prepare snapshot
 echo "🌸 Preparing snapshot for sandbox"
-cs app create tmpdemo-notebook -O ${SANDBOX_ORG} - << EOF
+SNAPSHOT_NAME=${SNAPSHOT_NAME:-base-notebook-v1}
+cs app create ${APP_NAME}-sn -O ${SANDBOX_ORG} - << EOF
 workspaces:
   - name: dev
     checkouts:
       - path: solutions
         repo:
           git: https://github.com/crafting-demo/solutions.git
-        version_spec: master
-
 EOF
-cs sandbox create tmpdemo-notebook -a tmpdemo-notebook -O ${SANDBOX_ORG}
-cs ssh -W tmpdemo-notebook/dev -O ${SANDBOX_ORG} bash -c "cd solutions/shared/snapshots/notebook/ && bash build_base.sh base-notebook-v1"
-cs sandbox delete tmpdemo-notebook -O ${SANDBOX_ORG} --force
-cs app delete tmpdemo-notebook -O ${SANDBOX_ORG} --force
+cs sandbox create ${APP_NAME}-sn -a ${APP_NAME}-sn -O ${SANDBOX_ORG}
+cs ssh -W ${APP_NAME}-sn/dev -O ${SANDBOX_ORG} -- bash -c "cd solutions/shared/snapshots/notebook/ && bash build_base.sh ${SNAPSHOT_NAME}"
+cs sandbox delete ${APP_NAME}-sn -O ${SANDBOX_ORG} --force
+cs app delete ${APP_NAME}-sn -O ${SANDBOX_ORG} --force
 
 # Upload OpenVPN Config
 echo "🌸 Uploading OpenVPN Config"
@@ -52,6 +51,7 @@ sed "s/AWS_CONFIG_FILE.*/AWS_CONFIG_FILE=\/run\/sandbox\/fs\/secrets\/shared\/${
     sed "s/SERVICE_LAUNCH_TYPE.*/SERVICE_LAUNCH_TYPE=${SERVICE_LAUNCH_TYPE}/g" | \
     sed  "s#TASK_IMAGE=.*#TASK_IMAGE=${TASK_IMAGE}#g" | \
     sed "s/SECURITY_GROUPS=.*/SECURITY_GROUPS=${SECURITY_GROUP}/g" | \
+    sed "s/base_snapshot.*/base_snapshot: ${SNAPSHOT_NAME}/g" | \
     cs app create ${APP_NAME} -O ${SANDBOX_ORG} -
 
 echo "🎉 Notebook created, now you can create a sandbox with the app: cs sandbox create YOUR_SANDBOX_NAME -a ${APP_NAME}"  
