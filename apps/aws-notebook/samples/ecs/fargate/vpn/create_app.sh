@@ -65,12 +65,12 @@ EOF
 
 # Create app
 echo "🌸 Creating App"
-sed "s/AWS_CONFIG_FILE.*/AWS_CONFIG_FILE=\/run\/sandbox\/fs\/secrets\/shared\/${AWS_CONFIG}/g" ../../../../app.yaml | \
-    sed "s/OPENVPN_CONFIG_FILE.*/OPENVPN_CONFIG_FILE=\/run\/sandbox\/fs\/secrets\/shared\/${APP_NAME}-openvpn-config/g" | \
-    sed "s/ECS_CLUSTER_NAME.*/ECS_CLUSTER_NAME=${ECS_CLUSTER_NAME}/g" | \
-    sed "s/SUBNET_ID.*/SUBNET_ID=${SUBNET_ID}/g" | \
-    sed "s/SERVICE_LAUNCH_TYPE.*/SERVICE_LAUNCH_TYPE=${SERVICE_LAUNCH_TYPE}/g" | \
-    sed  "s#TASK_IMAGE=.*#TASK_IMAGE=${TASK_IMAGE}#g" | \
+sed "s/- AWS_CONFIG_FILE.*/- AWS_CONFIG_FILE=\/run\/sandbox\/fs\/secrets\/shared\/${AWS_CONFIG}/g" ../../../../app.yaml | \
+    sed "s/- OPENVPN_CONFIG_FILE.*/- OPENVPN_CONFIG_FILE=\/run\/sandbox\/fs\/secrets\/shared\/${APP_NAME}-openvpn-config/g" | \
+    sed "s/- ECS_CLUSTER_NAME.*/- ECS_CLUSTER_NAME=${ECS_CLUSTER_NAME}/g" | \
+    sed "s/- SUBNET_ID.*/- SUBNET_ID=${SUBNET_ID}/g" | \
+    sed "s/- SERVICE_LAUNCH_TYPE.*/- SERVICE_LAUNCH_TYPE=${SERVICE_LAUNCH_TYPE}/g" | \
+    sed "s#- TASK_IMAGE=.*#- TASK_IMAGE=${TASK_IMAGE}#g" | \
     sed "s/base_snapshot.*/base_snapshot: ${SNAPSHOT_NAME}/g" | \
     cs app create ${APP_NAME} -O ${SANDBOX_ORG} -
 
