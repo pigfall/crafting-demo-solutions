@@ -120,7 +120,7 @@ resource "aws_ec2_client_vpn_endpoint" "vpn" {
     enabled = false
   }
 
-  vpc_id             = aws_vpc.dev-connection-ecs-fargate-vpn.id
+  vpc_id = aws_vpc.dev-connection-ecs-fargate-vpn.id
 
 }
 
