@@ -37,7 +37,7 @@ terraform init && terraform apply -auto-approve -var="ecs_cluster_name=<ECS_CLUS
 export AWS_CONFIG=<YOUR_AWS_CONFIG>
 # The prepared container image for ECS task service.
 export TASK_IMAGE=<TASK_IMAGE>
-# Which sandbox organization will be used to create the app
+# Which sandbox organization will be used to create the app. If you are in sandbox env, the SANDBOX_ORG has been exported, you can ignore  exporting it again.
 export SANDBOX_ORG=<SANDBOX_ORG>
 ./create_app.sh <YOUR_APP_NAME>
 # instance a sandbox  from the app
@@ -47,12 +47,12 @@ cs  sandbox create <YOUR_SANDBOX_NAME> -a <YOUR_APP_NAME>
 ## Clean the resources
 ``` bash
 # Delete the resources in sandbox
-cs sandbxo delete <YOUR_SANDBOX_NAME>
+cs sandbox delete <YOUR_SANDBOX_NAME>
 cs app delete <YOUR_APP_NAME>
 cs secret delete <YOUR_APP_NAME>-openvpn-config
 
 # Delete the resouces in AWS
-terraform destroy -auto-approve
+terraform apply -destroy -auto-approve -var="ecs_cluster_name=<ECS_CLUSTER_NAME>"
 ```
 
 ## FAQ
