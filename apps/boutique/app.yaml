@@ -36,6 +36,7 @@ workspaces:
   env:
   - GOOGLE_APPLICATION_CREDENTIALS=/run/sandbox/fs/secrets/shared/shared/gcp-account.json
   - KUBECONFIG=/run/sandbox/fs/secrets/shared/shared/kubeconfig-demo1.yaml
+  - K8S_NS=${SANDBOX_APP}-${SANDBOX_ID}
   probes:
     readiness:
     - name: frontend
@@ -46,7 +47,7 @@ resources:
 - name: kubernetes
   brief: The deployment in the Kubernetes cluster
   details: |
-    The deployment is in namespace "{{data.namespace}}"
+    The deployment is in namespace `{{data.namespace}}`.
   handlers:
     on_create:
       max_retries: 3
