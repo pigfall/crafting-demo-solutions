@@ -1,0 +1,4 @@
+daemons:
+  lb:
+    run:
+      cmd: apps/boutique/frontend.sh

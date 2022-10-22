@@ -1,7 +1,19 @@
 # Create App using:
 #  cs app create shared/boutique app.yaml
+endpoints:
+- name: shop
+  http:
+    routes:
+    - path_prefix: /
+      backend:
+        target: app
+        port: frontend
 workspaces:
 - name: app
+  ports:
+  - name: frontend
+    port: 8000
+    protocol: HTTP/TCP
   checkouts:
   - path: src/demo
     repo:
@@ -10,6 +22,9 @@ workspaces:
   - path: src/solutions
     repo:
       git: https://github.com/crafting-demo/solutions
+    manifest:
+      overlays:
+      - file: apps/boutique/manifest.yaml
   packages:
   - name: golang
     version: ~1.18
@@ -21,3 +36,32 @@ workspaces:
   env:
   - GOOGLE_APPLICATION_CREDENTIALS=/run/sandbox/fs/secrets/shared/shared/gcp-account.json
   - KUBECONFIG=/run/sandbox/fs/secrets/shared/shared/kubeconfig-demo1.yaml
+  probes:
+    readiness:
+    - name: frontend
+      http_get:
+        port: 8000
+        path: /
+resources:
+- name: kubernetes
+  brief: The deployment in the Kubernetes cluster
+  details: |
+    The deployment is in namespace "{{data.namespace}}"
+  handlers:
+    on_create:
+      max_retries: 3
+      timeout: 300s
+      # save_state: true
+      use_workspace:
+        name: app
+        run:
+          dir: src/solutions/apps/boutique
+          cmd: ./deploy.sh
+    on_delete:
+      max_retries: 3
+      timeout: 300s
+      use_workspace:
+        name: app
+        run:
+          dir: src/solutions/apps/boutique
+          cmd: ./undeploy.sh
