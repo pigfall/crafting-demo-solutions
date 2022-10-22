@@ -3,7 +3,7 @@
 . "${BASH_SOURCE[0]%/*}/functions.sh"
 
 # Ignore the error in case namespace exists.
-kubectl create ns "$NAMESPACE" 2>/dev/null || true
+kubectl create ns "$NAMESPACE" >&2 || true
 
 # Remove Load Balancer and loadgenerator.
 yaml2json < "$K8S_MANIFEST_FILE" | \
