@@ -52,7 +52,7 @@ resources:
     on_create:
       max_retries: 3
       timeout: 300s
-      # save_state: true
+      save_state: true
       use_workspace:
         name: app
         run:

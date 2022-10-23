@@ -69,6 +69,7 @@ resources:
     on_create:
       max_retries: 3
       timeout: 1800s
+      save_state: true
       use_workspace:
         name: dev
         run:
